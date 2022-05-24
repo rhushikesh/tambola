@@ -8,6 +8,18 @@ typealias Elements = List<Int?>
 typealias Ticket = List<Elements>
 
 object TicketGenerator {
+    private val ranges: List<IntRange> = listOf(
+        IntRange(1, 9),
+        IntRange(10, 19),
+        IntRange(20, 29),
+        IntRange(30, 39),
+        IntRange(40, 49),
+        IntRange(50, 59),
+        IntRange(60, 69),
+        IntRange(70, 79),
+        IntRange(80, 90)
+    )
+
     fun generateRandomRowTemplate(numberOfColumns: Int = 9, nonEmptyColumns: Int = 5): Template {
         val emptyColumns = numberOfColumns - nonEmptyColumns
         return List(nonEmptyColumns) { true }.plus(List(emptyColumns) { false }).shuffled()
@@ -58,7 +70,7 @@ object TicketGenerator {
         return rowTemplates.transpose().mapIndexed { index, columnTemplate ->
             fillColumnTemplates(
                 columnTemplate,
-                index.times(10).let { IntRange(0 + it, 9 + it) }
+                ranges[index]
             )
         }.transpose()
     }
