@@ -58,7 +58,7 @@ object TicketGenerator {
         return rowTemplates.transpose().mapIndexed { index, columnTemplate ->
             fillColumnTemplates(
                 columnTemplate,
-                IntRange(0 + (10 * index), 9 + (10 * index))
+                index.times(10).let { IntRange(0 + it, 9 + it) }
             )
         }.transpose()
     }
