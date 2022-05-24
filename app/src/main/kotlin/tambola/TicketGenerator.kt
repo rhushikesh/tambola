@@ -51,15 +51,7 @@ object TicketGenerator {
         range: IntRange
     ): Elements {
         val numberOfElementsToFill = column.count { it }
-        val elementsToFill =
-            IntRange(1, numberOfElementsToFill).fold(Pair<Int, List<Int>>(range.first, listOf())) { acc, curr ->
-                val nextElement: Int = IntRange(
-                    acc.first,
-                    (range.last - numberOfElementsToFill + curr)
-                ).random()
-
-                Pair(nextElement.inc(), acc.second.plus(nextElement))
-            }.second
+        val elementsToFill = range.shuffled().take(numberOfElementsToFill).sorted()
 
         return column.fillIfNot({ !it }, elementsToFill, null)
     }
