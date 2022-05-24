@@ -1,5 +1,8 @@
 package tambola
 
+import tambola.extensions.fillIfNot
+import tambola.extensions.transpose
+
 typealias Template = List<Boolean>
 typealias Elements = List<Int?>
 typealias Ticket = List<Elements>
@@ -28,12 +31,7 @@ object TicketGenerator {
         val remainingRowTemplateValues =
             List(remainingNonEmptyColumns) { true }.plus(List(remainingEmptyColumns) { false }).shuffled()
 
-        return fixedRowTemplates.fold(Pair(remainingRowTemplateValues, listOf<Boolean>())) { acc, curr ->
-            when (curr) {
-                true -> Pair(acc.first, acc.second.plus(true))
-                else -> Pair(acc.first.drop(1), acc.second.plus(acc.first.first()))
-            }
-        }.second
+        return fixedRowTemplates.fillIfNot({ it }, remainingRowTemplateValues, true)
     }
 
     fun fillColumnTemplates(
@@ -51,30 +49,18 @@ object TicketGenerator {
                 Pair(nextElement.inc(), acc.second.plus(nextElement))
             }.second
 
-        return column.fold(Pair(elementsToFill, listOf<Int?>())) { acc, curr ->
-            when (curr) {
-                false -> Pair(acc.first, acc.second.plus(null))
-                else -> Pair(acc.first.drop(1), acc.second.plus(acc.first.first()))
-            }
-        }.second
+        return column.fillIfNot({ !it }, elementsToFill, null)
     }
 
     fun fillRowTemplates(
-        rowTemplates: List<Template>,
-        numberOfColumns: Int = 9,
-        numberOfRows: Int = 3
+        rowTemplates: List<Template>
     ): Ticket {
-        val columnTemplates: List<Template> =
-            (0 until numberOfColumns).map { rowTemplates.map { rowTemplate -> rowTemplate[it] } }
-
-        val columnValues = columnTemplates.mapIndexed { index, columnTemplate ->
+        return rowTemplates.transpose().mapIndexed { index, columnTemplate ->
             fillColumnTemplates(
                 columnTemplate,
                 IntRange(0 + (10 * index), 9 + (10 * index))
             )
-        }
-
-        return (0 until numberOfRows).map { columnValues.map { columnValue -> columnValue[it] } }
+        }.transpose()
     }
 
     fun generate(
@@ -86,11 +72,10 @@ object TicketGenerator {
         val thirdRowTemplate =
             generateRandomThirdRowTemplate(firstRowTemplate, secondRowTemplate, numberOfColumns, nonEmptyColumns)
 
-        return fillRowTemplates(listOf(firstRowTemplate, secondRowTemplate, thirdRowTemplate), numberOfColumns, 3)
+        return fillRowTemplates(listOf(firstRowTemplate, secondRowTemplate, thirdRowTemplate))
     }
 
     fun print(ticket: Ticket) {
         ticket.map { it.map { element -> element?.toString() ?: "__" } }.forEach { println(it) }
     }
-
 }

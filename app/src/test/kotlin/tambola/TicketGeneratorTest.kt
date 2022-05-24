@@ -87,7 +87,7 @@ class TicketGeneratorTest : DescribeSpec({
 
         context("fillRowTemplates") {
             it("should not fill false values") {
-                fillRowTemplates(listOf(listOf(false, false), listOf(false, false)), 2, 2) shouldBe listOf(
+                fillRowTemplates(listOf(listOf(false, false), listOf(false, false))) shouldBe listOf(
                     listOf(
                         null,
                         null
@@ -96,7 +96,7 @@ class TicketGeneratorTest : DescribeSpec({
             }
 
             it("should fill true values in ascending order") {
-                val rows = fillRowTemplates(listOf(listOf(true, true), listOf(true, true)), 2, 2)
+                val rows = fillRowTemplates(listOf(listOf(true, true), listOf(true, true)))
 
                 IntRange(0, 9).contains(rows[0][0]) shouldBe true
                 IntRange(0, 9).contains(rows[1][0]) shouldBe true
