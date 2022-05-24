@@ -14,22 +14,22 @@ import tambola.TicketGenerator.generateRandomThirdRowTemplate
 class TicketGeneratorTest : DescribeSpec({
     describe("TicketGenerator") {
         context("generateRandomRowTemplate") {
-            it("should generate row template with 5 true values") {
+            it("should generate row template with 5 Fill values") {
                 val numberOfColumns = 5
                 val nonEmptyColumns = 3
                 val rowTemplate = generateRandomRowTemplate(numberOfColumns, nonEmptyColumns)
 
                 rowTemplate.count() shouldBe numberOfColumns
-                rowTemplate.count { it } shouldBe nonEmptyColumns
+                rowTemplate.count { it is Fill } shouldBe nonEmptyColumns
             }
         }
 
         context("generateRandomThirdRowTemplate") {
             it("it should fill element in third row if it is absent in first two rows") {
                 forAll(
-                    row(listOf(true, false), listOf(true, false), listOf(false, true)),
-                    row(listOf(false, true), listOf(false, true), listOf(true, false))
-                ) { firstRow: List<Boolean>, secondRow: List<Boolean>, thirdRow: List<Boolean> ->
+                    row(listOf(Fill, Empty), listOf(Fill, Empty), listOf(Empty, Fill)),
+                    row(listOf(Empty, Fill), listOf(Empty, Fill), listOf(Fill, Empty))
+                ) { firstRow, secondRow, thirdRow ->
                     val numberOfColumns = 2
                     val nonEmptyColumns = 1
                     generateRandomThirdRowTemplate(
@@ -45,33 +45,33 @@ class TicketGeneratorTest : DescribeSpec({
                 val numberOfColumns = 5
                 val nonEmptyColumns = 3
                 val firstRowTemplateWithLastElementAsFalse =
-                    generateRandomRowTemplate(numberOfColumns, nonEmptyColumns).plus(false)
+                    generateRandomRowTemplate(numberOfColumns, nonEmptyColumns).plus(Empty)
                 val secondRowTemplateWithLastElementAsFalse =
-                    generateRandomRowTemplate(numberOfColumns, nonEmptyColumns).plus(false)
+                    generateRandomRowTemplate(numberOfColumns, nonEmptyColumns).plus(Empty)
 
                 val thirdRowTemplate = generateRandomThirdRowTemplate(
                     firstRowTemplateWithLastElementAsFalse,
                     secondRowTemplateWithLastElementAsFalse, numberOfColumns + 1, nonEmptyColumns
                 )
 
-                thirdRowTemplate.last() shouldBe true
+                thirdRowTemplate.last() shouldBe Fill
                 thirdRowTemplate.count() shouldBe numberOfColumns + 1
-                thirdRowTemplate.count { it } shouldBe nonEmptyColumns
+                thirdRowTemplate.count { it is Fill } shouldBe nonEmptyColumns
             }
         }
 
         context("fillColumnTemplates") {
-            it("should not fill false values") {
-                fillColumnTemplates(listOf(false, false), IntRange(1, 10)) shouldBe listOf(null, null)
+            it("should not fill Empty values") {
+                fillColumnTemplates(listOf(Empty, Empty), IntRange(1, 10)) shouldBe listOf(null, null)
             }
 
-            it("should fill true values in ascending order") {
-                fillColumnTemplates(listOf(true, true), IntRange(1, 2)) shouldBe listOf(1, 2)
+            it("should fill Fill values in ascending order") {
+                fillColumnTemplates(listOf(Fill, Fill), IntRange(1, 2)) shouldBe listOf(1, 2)
             }
 
-            it("should fill true values with random values from given range in ascending order ") {
+            it("should fill Fill values with random values from given range in ascending order ") {
                 val givenRange = IntRange(1, 10)
-                val columnElements = fillColumnTemplates(listOf(true, false, true, true), givenRange)
+                val columnElements = fillColumnTemplates(listOf(Fill, Empty, Fill, Fill), givenRange)
 
                 val columnElementsWithValues = columnElements.filterNotNull()
 
@@ -86,8 +86,8 @@ class TicketGeneratorTest : DescribeSpec({
         }
 
         context("fillRowTemplates") {
-            it("should not fill false values") {
-                fillRowTemplates(listOf(listOf(false, false), listOf(false, false))) shouldBe listOf(
+            it("should not fill Empty values") {
+                fillRowTemplates(listOf(listOf(Empty, Empty), listOf(Empty, Empty))) shouldBe listOf(
                     listOf(
                         null,
                         null
@@ -95,8 +95,8 @@ class TicketGeneratorTest : DescribeSpec({
                 )
             }
 
-            it("should fill true values in ascending order") {
-                val rows = fillRowTemplates(listOf(listOf(true, true), listOf(true, true)))
+            it("should fill Fill values in ascending order") {
+                val rows = fillRowTemplates(listOf(listOf(Fill, Fill), listOf(Fill, Fill)))
 
                 IntRange(0, 9).contains(rows[0][0]) shouldBe true
                 IntRange(0, 9).contains(rows[1][0]) shouldBe true

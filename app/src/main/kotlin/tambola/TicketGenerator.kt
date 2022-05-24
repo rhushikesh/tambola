@@ -3,8 +3,13 @@ package tambola
 import tambola.extensions.fillIfNot
 import tambola.extensions.transpose
 
-typealias Template = List<Boolean>
-typealias Elements = List<Int?>
+sealed interface ElementTemplate
+object Fill : ElementTemplate
+object Empty : ElementTemplate
+
+typealias Template = List<ElementTemplate>
+typealias Element = Int?
+typealias Elements = List<Element>
 typealias Ticket = List<Elements>
 
 object TicketGenerator {
@@ -22,7 +27,7 @@ object TicketGenerator {
 
     fun generateRandomRowTemplate(numberOfColumns: Int = 9, nonEmptyColumns: Int = 5): Template {
         val emptyColumns = numberOfColumns - nonEmptyColumns
-        return List(nonEmptyColumns) { true }.plus(List(emptyColumns) { false }).shuffled()
+        return List(nonEmptyColumns) { Fill }.plus(List(emptyColumns) { Empty }).shuffled()
     }
 
     fun generateRandomThirdRowTemplate(
@@ -33,27 +38,27 @@ object TicketGenerator {
     ): Template {
         val fixedRowTemplates = first.zip(second).map {
             when (it) {
-                Pair(false, false) -> true
-                else -> false
+                Pair(Empty, Empty) -> Fill
+                else -> Empty
             }
         }
-        val remainingNonEmptyColumns = nonEmptyColumns - fixedRowTemplates.count { it }
+        val remainingNonEmptyColumns = nonEmptyColumns - fixedRowTemplates.count { it is Fill }
         val remainingEmptyColumns = numberOfColumns - nonEmptyColumns
 
         val remainingRowTemplateValues =
-            List(remainingNonEmptyColumns) { true }.plus(List(remainingEmptyColumns) { false }).shuffled()
+            List(remainingNonEmptyColumns) { Fill }.plus(List(remainingEmptyColumns) { Empty }).shuffled()
 
-        return fixedRowTemplates.fillIfNot({ it }, remainingRowTemplateValues, true)
+        return fixedRowTemplates.fillIfNot({ it is Fill }, remainingRowTemplateValues, Fill)
     }
 
     fun fillColumnTemplates(
         column: Template,
         range: IntRange
     ): Elements {
-        val numberOfElementsToFill = column.count { it }
+        val numberOfElementsToFill = column.count { it is Fill }
         val elementsToFill = range.shuffled().take(numberOfElementsToFill).sorted()
 
-        return column.fillIfNot({ !it }, elementsToFill, null)
+        return column.fillIfNot({ it is Empty }, elementsToFill, null)
     }
 
     fun fillRowTemplates(
