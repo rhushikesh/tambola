@@ -31,10 +31,10 @@ object TicketGenerator {
         listOf(Fill, Fill, Fill, Fill, Fill, Empty, Empty, Empty, Empty)
     )
 
-    fun generateRandomRowTemplate() =
+    private fun generateRandomRowTemplate() =
         validTemplate.shuffled().transpose().shuffled().transpose()
 
-    fun fillColumnTemplates(
+    private fun fillColumnTemplates(
         column: Template,
         range: IntRange
     ): Elements {
@@ -44,7 +44,7 @@ object TicketGenerator {
         return column.fillIfNot({ it is Empty }, elementsToFill, null)
     }
 
-    fun fillRowTemplates(
+    private fun fillRowTemplates(
         rowTemplates: List<Template>
     ): Ticket {
         return rowTemplates
